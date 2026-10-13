@@ -1,0 +1,43 @@
+
+# Python environments
+.venv/
+venv/
+env/
+
+# Secrets
+.env
+.env.*
+!.env.example
+
+# Python generated files
+__pycache__/
+*.py[cod]
+.pytest_cache/
+.mypy_cache/
+.ruff_cache/
+
+# IDE
+.vscode/
+.idea/
+
+# Uploaded resumes and private data
+data/
+uploads/
+resumes/
+
+# Local database files and backups
+*.db
+*.sqlite3
+*.sql
+*.dump
+*.backup
+
+# Build files
+build/
+dist/
+*.egg-info/
+
+# System files
+.DS_Store
+Thumbs.db
+extra/
