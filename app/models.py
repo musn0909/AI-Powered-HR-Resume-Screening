@@ -62,6 +62,11 @@ class Job(Base):
         back_populates="jobs",
         passive_deletes=True
     )
+    required_skills = Column(
+    JSON,
+    nullable=False,
+    default=list
+    )
 
 
 class User(Base):

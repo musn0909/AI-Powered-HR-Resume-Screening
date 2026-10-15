@@ -2,10 +2,10 @@
 from contextlib import asynccontextmanager
 from typing import Annotated
 from app.models import applications
-
+from app.resumes import router as resumes_router
 from fastapi import Security
 from app.auth import router as auth_router, require_roles
-
+from app.matching import router as matching_router
 from fastapi import FastAPI, Depends, HTTPException
 from sqlalchemy import select
 from sqlalchemy.exc import IntegrityError
@@ -27,6 +27,10 @@ app = FastAPI(
     lifespan=lifespan
 )
 app.include_router(auth_router)
+app.include_router(resumes_router)
+app.include_router(matching_router)
+
+
 DbSession = Annotated[Session, Depends(get_db)]
 
 
