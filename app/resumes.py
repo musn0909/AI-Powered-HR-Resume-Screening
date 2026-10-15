@@ -6,6 +6,7 @@ from pathlib import Path
 from typing import Annotated
 from app.extractor import extract_resume_text
 from sqlalchemy.exc import SQLAlchemyError
+from app.information_extractor import extract_candidate_information
 
 from fastapi import (
     APIRouter, Depends, File,
@@ -300,4 +301,77 @@ def get_resume_text(
         "candidate_id": resume.candidate_id,
         "filename": resume.original_filename,
         "extracted_text": resume.extracted_text
+    }
+
+# EXTRACT STRUCTURED CANDIDATE INFORMATION
+@router.post("/{resume_id}/analyze")
+def analyze_resume(
+    resume_id: int,
+    db: DbSession
+):
+    resume = db.get(models.Resume, resume_id)
+
+    if resume is None:
+        raise HTTPException(
+            status_code=404,
+            detail="Resume not found"
+        )
+
+    if not resume.extracted_text:
+        raise HTTPException(
+            status_code=422,
+            detail=(
+                "Resume text has not been extracted. "
+                "Run the /extract endpoint first."
+            )
+        )
+
+    structured = extract_candidate_information(
+        resume.extracted_text
+    )
+
+    resume.structured_data = structured
+
+    try:
+        db.commit()
+        db.refresh(resume)
+    except Exception:
+        db.rollback()
+        raise HTTPException(
+            status_code=500,
+            detail="Could not save structured data"
+        )
+
+    return {
+        "message": "Resume analyzed successfully",
+        "resume_id": resume.id,
+        "candidate_id": resume.candidate_id,
+        "structured_data": resume.structured_data
+    }
+
+
+# GET STRUCTURED RESUME INFORMATION
+@router.get("/{resume_id}/analysis")
+def get_resume_analysis(
+    resume_id: int,
+    db: DbSession
+):
+    resume = db.get(models.Resume, resume_id)
+
+    if resume is None:
+        raise HTTPException(
+            status_code=404,
+            detail="Resume not found"
+        )
+
+    if resume.structured_data is None:
+        raise HTTPException(
+            status_code=404,
+            detail="Resume has not been analyzed"
+        )
+
+    return {
+        "resume_id": resume.id,
+        "candidate_id": resume.candidate_id,
+        "structured_data": resume.structured_data
     }

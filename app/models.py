@@ -142,3 +142,7 @@ class Resume(Base):
     )
 
     candidate = relationship("Candidate")
+    structured_data = Column(
+    JSON,
+    nullable=True
+)
